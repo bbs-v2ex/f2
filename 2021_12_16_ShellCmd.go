@@ -12,6 +12,7 @@ import (
 
 func ShellCmd(name string, arg ...string) (outStr, errStr string, err error) {
 	cmd := exec.Command(name, arg...)
+	log.Printf("运行命令（%s）", fmt.Sprintf(`%s %s`, cmd))
 	var stdout, stderr []byte
 	var errStdout, errStderr error
 	stdoutIn, _ := cmd.StdoutPipe()

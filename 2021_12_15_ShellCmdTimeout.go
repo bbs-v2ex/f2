@@ -2,6 +2,7 @@ package f2
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -46,7 +47,7 @@ func traceOutput(out *bytes.Buffer) {
 }
 
 // 运行Shell命令，设定超时时间（秒）
-func ShellCmdTimeout(timeout int, cmd string, args ...string) (stdout, stderr string, e error) {
+func _fq_ShellCmdTimeout(timeout int, cmd string, args ...string) (stdout, stderr string, e error) {
 	if len(cmd) == 0 {
 		e = fmt.Errorf("cannot run a empty command")
 		return
@@ -74,5 +75,48 @@ func ShellCmdTimeout(timeout int, cmd string, args ...string) (stdout, stderr st
 	}
 	stdout = trimOutput(out)
 	stderr = trimOutput(err)
+	return
+}
+func ShellCmdTimeout(timeout int, name string, arg ...string) (outStr, errStr string, err error) {
+	cmd := exec.Command(name, arg...)
+	log.Printf("运行命令（%s）超时，超时设定：%v 秒。", fmt.Sprintf(`%s %s`, cmd, strings.Join(arg, " ")), timeout)
+	var stdout, stderr []byte
+	var errStdout, errStderr error
+	stdoutIn, _ := cmd.StdoutPipe()
+	stderrIn, _ := cmd.StderrPipe()
+	cmd.Start()
+	go func() {
+		stdout, errStdout = __2021_12_16_copyAndCapture(os.Stdout, stdoutIn)
+	}()
+	go func() {
+		stderr, errStderr = __2021_12_16_copyAndCapture(os.Stderr, stderrIn)
+	}()
+	// 启动routine等待结束
+	done := make(chan error)
+	go func() { done <- cmd.Wait() }()
+	// 启动routine持续打印输出
+
+	// 设定超时时间，并select它
+	after := time.After(time.Duration(timeout) * time.Second)
+	select {
+	case <-after:
+		cmd.Process.Signal(syscall.SIGINT)
+		time.Sleep(time.Second)
+		cmd.Process.Kill()
+	case err2 := <-done:
+		//err = cmd.Wait()
+		if err2 != nil {
+			err = errors.New("failed to capture stdout or stderr\n")
+			return
+		}
+	}
+
+	if errStdout != nil || errStderr != nil {
+		err = errors.New("failed to capture stdout or stderr\n")
+		//log.Fatalf("failed to capture stdout or stderr\n")
+		return
+	}
+	outStr, errStr = string(stdout), string(stderr)
+	fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
 	return
 }
