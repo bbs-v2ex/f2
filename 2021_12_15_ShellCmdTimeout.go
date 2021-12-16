@@ -1,4 +1,4 @@
-package go_f2
+package f2
 
 import (
 	"bytes"
