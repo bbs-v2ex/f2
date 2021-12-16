@@ -12,7 +12,7 @@ import (
 
 func ShellCmd(name string, arg ...string) (outStr, errStr string, err error) {
 	cmd := exec.Command(name, arg...)
-	log.Printf("运行命令（%s）", fmt.Sprintf(`%s %s`, cmd))
+	log.Printf(name, arg)
 	var stdout, stderr []byte
 	var errStdout, errStderr error
 	stdoutIn, _ := cmd.StdoutPipe()
@@ -26,7 +26,9 @@ func ShellCmd(name string, arg ...string) (outStr, errStr string, err error) {
 	}()
 	err = cmd.Wait()
 	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
+		//log.Fatalf()
+		//err = errors.New("cmd.Run() failed with %s\n", err)
+		return
 	}
 	if errStdout != nil || errStderr != nil {
 		err = errors.New("failed to capture stdout or stderr\n")
