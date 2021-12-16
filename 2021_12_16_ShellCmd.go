@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 )
 
 func ShellCmd(name string, arg ...string) (outStr, errStr string, err error) {
@@ -44,8 +45,10 @@ func __2021_12_16_copyAndCapture(w io.Writer, r io.Reader) ([]byte, error) {
 		if n > 0 {
 			d := buf[:n]
 			out = append(out, d...)
-			d2, _ := GbkToUtf8(d)
-			os.Stdout.Write(d2)
+			if runtime.GOOS == "windows" {
+				d, _ = GbkToUtf8(d)
+			}
+			os.Stdout.Write(d)
 		}
 		if err != nil {
 			// Read returns io.EOF at the end of file, which is not an error for us

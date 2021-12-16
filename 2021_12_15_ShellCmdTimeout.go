@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -17,30 +18,31 @@ func trimOutput(buffer bytes.Buffer) string {
 
 // 实时打印输出
 func traceOutput(out *bytes.Buffer) {
-	offset := 0
-	t := time.NewTicker(time.Second * 3)
-	defer t.Stop()
-	//show := ""
-	for {
-		<-t.C
-		result := bytes.TrimRight((*out).Bytes(), "\x00")
-		size := len(result)
-		rows := bytes.Split(bytes.TrimSpace(result), []byte{'\n'})
-		nRows := len(rows)
-		newRows := rows[offset:nRows]
-
-		if result[size-1] != '\n' {
-			newRows = rows[offset : nRows-1]
-		}
-
-		if len(newRows) < offset {
-			continue
-		}
-		for _, row := range newRows {
-			log.Println(string(row))
-		}
-		offset += len(newRows)
-	}
+	__2021_12_16_copyAndCapture(os.Stdout, out)
+	//offset := 0
+	//t := time.NewTicker(time.Second * 3)
+	//defer t.Stop()
+	////show := ""
+	//for {
+	//	<-t.C
+	//	result := bytes.TrimRight((*out).Bytes(), "\x00")
+	//	size := len(result)
+	//	rows := bytes.Split(bytes.TrimSpace(result), []byte{'\n'})
+	//	nRows := len(rows)
+	//	newRows := rows[offset:nRows]
+	//
+	//	if result[size-1] != '\n' {
+	//		newRows = rows[offset : nRows-1]
+	//	}
+	//
+	//	if len(newRows) < offset {
+	//		continue
+	//	}
+	//	for _, row := range newRows {
+	//		log.Println(string(row))
+	//	}
+	//	offset += len(newRows)
+	//}
 }
 
 // 运行Shell命令，设定超时时间（秒）
