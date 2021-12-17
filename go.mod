@@ -1,4 +1,4 @@
-module f2
+module github.com/bbs-v2ex/f2
 
 go 1.16
 
